@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_mfa_totp/templates *
+recursive-include octoprint_mfa_totp/translations *
+recursive-include octoprint_mfa_totp/static *
