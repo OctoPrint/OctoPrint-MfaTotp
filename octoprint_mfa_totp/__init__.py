@@ -7,6 +7,7 @@ import pyotp
 from flask import abort, jsonify, make_response
 from flask_babel import gettext
 from flask_login import current_user
+from octoprint.plugin.types import WrongMfaCredentials
 from octoprint.schema import BaseModel
 
 CLEANUP_CUTOFF = 60 * 30  # 30 minutes
@@ -191,23 +192,33 @@ class MfaTotpPlugin(
 
     ##~~ MfaPlugin mixin
 
-    def get_mfa_form(self, *args, **kwargs):
-        return gettext("TOTP"), "mfa_totp_form.jinja2"
-
-    def is_mfa_step_required(self, request, user, data, *args, **kwargs):
+    def is_mfa_enabled(self, user, *args, **kwargs):
         userid = user.get_id()
-        if userid not in self._data.users or not self._data.users[userid].active:
-            return False
+        return userid in self._data.users and self._data.users[userid].active
+
+    def has_mfa_credentials(self, request, user, data, *args, **kwargs):
+        if not self.is_mfa_enabled(user):
+            # this should never happen as the calling code should check if we are enabled
+            # already, but still, if it does, we don't want to block the user
+            return True
 
         token = data.get(f"mfa-{self._identifier}-token", "")
         if not token:
-            return True
+            # token not there? we need to ask for it
+            return False
 
-        response = self.get_verification_response(userid, token)
-        if response:
-            return response
+        userid = user.get_id()
+        if not self._verify_user(userid, token):
+            if token == self._data.users[userid].last_used:
+                raise WrongMfaCredentials(
+                    gettext(
+                        "The entered token has already been used, please wait for a new one"
+                    )
+                )
+            else:
+                raise WrongMfaCredentials(gettext("Invalid token"))
 
-        return False
+        return True
 
     ##~~ Softwareupdate hook
 
