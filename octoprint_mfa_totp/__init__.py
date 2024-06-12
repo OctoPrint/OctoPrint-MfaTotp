@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from typing import Dict
@@ -47,7 +48,9 @@ class MfaTotpPlugin(
             self._data = MfaTotpSettings()
         else:
             try:
-                self._data = MfaTotpSettings.parse_file(self._data_file)
+                with open(self._data_file) as f:
+                    data = json.load(f)
+                self._data = MfaTotpSettings.model_validate(data)
             except Exception as e:
                 self._logger.exception(f"Error loading TOTP MFA data: {e}")
 
@@ -58,7 +61,7 @@ class MfaTotpPlugin(
         self._cleanup_data()
         try:
             with open(self._data_file, "w") as f:
-                f.write(self._data.json(indent=4))
+                f.write(self._data.model_dump_json(indent=4))
         except Exception as e:
             self._logger.exception(f"Error saving TOTP MFA data: {e}")
 
@@ -80,7 +83,7 @@ class MfaTotpPlugin(
         else:
             secret = pyotp.random_base32()
             self._data.users[userid] = MfaTotpUserSettings(
-                created=time.time(), secret=secret
+                created=int(time.time()), secret=secret
             )
             self._save_data()
 
