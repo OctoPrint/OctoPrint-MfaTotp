@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Dict
+from typing import Dict, Optional
 
 import octoprint.plugin
 import pyotp
@@ -18,7 +18,7 @@ VALID_WINDOW = 1  # delay of one tick is ok
 class MfaTotpUserSettings(BaseModel):
     created: int
     secret: str
-    last_used: str = None
+    last_used: Optional[str] = None
     active: bool = False
 
 
