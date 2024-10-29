@@ -10,6 +10,7 @@ from flask_babel import gettext
 from flask_login import current_user
 from octoprint.plugin.types import WrongMfaCredentials
 from octoprint.schema import BaseModel
+from octoprint.server.util.flask import ensure_credentials_checked_recently
 
 CLEANUP_CUTOFF = 60 * 30  # 30 minutes
 VALID_WINDOW = 1  # delay of one tick is ok
@@ -149,6 +150,7 @@ class MfaTotpPlugin(
         user = current_user
         if not user or not user.is_authenticated or not user.is_active:
             return abort(403)
+        ensure_credentials_checked_recently()
 
         userid = user.get_id()
 

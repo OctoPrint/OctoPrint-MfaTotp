@@ -2,6 +2,8 @@ $(() => {
     function MfaTotpViewModel(parameters) {
         var self = this;
 
+        self.loginState = parameters[0];
+
         self.active = ko.observable(false);
 
         self.enrollmentKey = ko.observable();
@@ -37,55 +39,63 @@ $(() => {
 
         self.enroll = () => {
             self.verificationToken("");
-            OctoPrint.plugins.mfa_totp.enroll().done((response) => {
-                self.enrollmentKey(response.key);
-                self.enrollmentUri(response.uri);
-                self.enrollmentDialog.modal("show");
-                $("#mfa_totp_enrollment_token").focus();
+            self.loginState.reauthenticateIfNecessary(() => {
+                OctoPrint.plugins.mfa_totp.enroll().done((response) => {
+                    self.enrollmentKey(response.key);
+                    self.enrollmentUri(response.uri);
+                    self.enrollmentDialog.modal("show");
+                    $("#mfa_totp_enrollment_token").focus();
+                });
             });
         };
 
         self.finishEnrollment = () => {
             const token = self.verificationToken();
             self.verificationToken("");
-            OctoPrint.plugins.mfa_totp
-                .activate(token)
-                .done(() => {
-                    self.verificationError(false);
-                    self.mfaError("");
-                    self.enrollmentDialog.modal("hide");
-                    self.requestData();
-                })
-                .fail(() => {
-                    self.verificationError(true);
-                });
+            self.loginState.reauthenticateIfNecessary(() => {
+                OctoPrint.plugins.mfa_totp
+                    .activate(token)
+                    .done(() => {
+                        self.verificationError(false);
+                        self.mfaError("");
+                        self.enrollmentDialog.modal("hide");
+                        self.requestData();
+                    })
+                    .fail(() => {
+                        self.verificationError(true);
+                    });
+            });
         };
 
         self.deactivate = () => {
             self.verificationToken("");
-            self.verificationDialog.modal("show");
-            $("#mfa_totp_verification_token").focus();
+            self.loginState.reauthenticateIfNecessary(() => {
+                self.verificationDialog.modal("show");
+                $("#mfa_totp_verification_token").focus();
+            });
         };
 
         self.finishDeactivation = () => {
             const token = self.verificationToken();
             self.verificationToken("");
             self.mfaError("");
-            OctoPrint.plugins.mfa_totp
-                .deactivate(token)
-                .done(() => {
-                    self.verificationError(false);
-                    self.mfaError("");
-                    self.verificationDialog.modal("hide");
-                    self.requestData();
-                })
-                .fail((xhr) => {
-                    const response = xhrErrorJson(xhr);
-                    if (response && response.mfa_error) {
-                        self.mfaError(response.mfa_error);
-                    }
-                    self.verificationError(true);
-                });
+            self.loginState.reauthenticateIfNecessary(() => {
+                OctoPrint.plugins.mfa_totp
+                    .deactivate(token)
+                    .done(() => {
+                        self.verificationError(false);
+                        self.mfaError("");
+                        self.verificationDialog.modal("hide");
+                        self.requestData();
+                    })
+                    .fail((xhr) => {
+                        const response = xhrErrorJson(xhr);
+                        if (response && response.mfa_error) {
+                            self.mfaError(response.mfa_error);
+                        }
+                        self.verificationError(true);
+                    });
+            });
         };
 
         self.onUserSettingsShown = self.onUserLoggedIn = () => {
@@ -104,7 +114,7 @@ $(() => {
 
     OCTOPRINT_VIEWMODELS.push({
         construct: MfaTotpViewModel,
-        dependencies: [],
+        dependencies: ["loginStateViewModel"],
         elements: [
             "#usersettings_mfa_plugin_mfa_totp",
             "#plugin_mfa_totp_enroll",
