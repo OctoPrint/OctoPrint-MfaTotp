@@ -135,6 +135,9 @@ class MfaTotpPlugin(
             },
         ]
 
+    def is_template_autoescaped(self):
+        return True
+
     ##~~ SimpleApiPlugin mixin
 
     def on_api_get(self, request):
