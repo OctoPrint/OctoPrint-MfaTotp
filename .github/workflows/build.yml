@@ -50,6 +50,11 @@ jobs:
       - build
       - pre-commit
     runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/OctoPrint-MfaTotp
+    permissions:
+      id-token: write
     steps:
       - name: ⬇ Download build result
         uses: actions/download-artifact@v4
@@ -66,6 +71,11 @@ jobs:
     if: github.event_name == 'release'
     needs: publish-on-testpypi
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://test.pypi.org/p/OctoPrint-MfaTotp
+    permissions:
+      id-token: write
     steps:
       - name: ⬇ Download build result
         uses: actions/download-artifact@v4
