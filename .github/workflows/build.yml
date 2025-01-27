@@ -68,8 +68,7 @@ jobs:
     name: 📦 Publish on TestPyPI
     if: github.event_name == 'release'
     needs:
-      - build
-      - pre-commit
+      - e2e
     runs-on: ubuntu-latest
     environment:
       name: testpypi
