@@ -43,6 +43,27 @@ jobs:
         run: |
           pre-commit run --all-files --show-diff-on-failure
 
+  e2e:
+    name: 🧪 E2E tests
+    needs: build
+    runs-on: ubuntu-22.04 # change back to ubuntu-latest once we drop Python 3.7 & upgrade playwright
+    strategy:
+      matrix:
+        octoprint: ["maintenance"] # add master once 1.11.0 has been released
+    steps:
+      - name: ⬇ Download build result
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: 🎭 Run OctoPrint's E2E Tests
+        uses: OctoPrint/actions/e2e@main
+        with:
+          ref: ${{ matrix.octoprint }}
+          deps: ${{ github.workspace }}/dist/*.whl
+          suffix: "-${{ matrix.octoprint }}"
+
   publish-on-testpypi:
     name: 📦 Publish on TestPyPI
     if: github.event_name == 'release'
