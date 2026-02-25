@@ -8,6 +8,7 @@ Successfully tested with
 
   - Google Authenticator
   - Aegis
+  - 1Password (community)
 
 but adheres to the TOTP standard and should work with any related apps.
 
