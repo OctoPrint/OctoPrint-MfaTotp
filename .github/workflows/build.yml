@@ -3,9 +3,12 @@ on:
   push:
     branches:
       - main
-      - devel
+      - dev
   release:
     types: [released]
+
+env:
+  DEFAULT_PYTHON: "3.12"
 
 jobs:
   build:
@@ -13,29 +16,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 🏗 Set up Python 3.12
+      - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: 🔨 Build a binary wheel and a source tarball
-        run: |
-          pip install --user --upgrade build
-          python -m build
-      - name: ⬆ Upload build result
-        uses: actions/upload-artifact@v4
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: 🔨 Build distribution
+        uses: OctoPrint/actions/build-dist@main
         with:
-          name: dist
-          path: dist
+          artifact: dist
 
   pre-commit:
     name: 🧹 Pre-commit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 🏗 Set up Python 3.12
+      - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.DEFAULT_PYTHON }}
       - name: 🏗 Set up pre-commit
         run: |
           pip install pre-commit
@@ -49,7 +47,7 @@ jobs:
     runs-on: ubuntu-22.04 # change back to ubuntu-latest once we drop Python 3.7 & upgrade playwright
     strategy:
       matrix:
-        octoprint: ["maintenance"] # add master once 1.11.0 has been released
+        octoprint: ["main", "dev"]
     steps:
       - name: ⬇ Download build result
         uses: actions/download-artifact@v4
