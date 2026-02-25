@@ -1,10 +1,50 @@
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel", "octoprint-setuptools"]
+requires = [
+    "setuptools>=68"
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "OctoPrint-MfaTotp"
+version = "1.0.0"
+description = "Plugin to support TOTP based Two Factor Authentication in OctoPrint."
+authors = [
+    { name = "Gina Häußge", email = "gina@octoprint.org" },
+]
+requires-python = ">=3.7,<4"
+dependencies = [
+    "pyotp>=2.9.0,<3",
+]
+dynamic = [
+    "license",
+]
+
+[project.entry-points."octoprint.plugin"]
+mfa_totp = "octoprint_mfa_totp"
+
+[project.urls]
+Homepage = "https://github.com/OctoPrint/OctoPrint-MfaTotp"
+
+[project.optional-dependencies]
+develop = [
+    "go-task-bin",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = [
+    "octoprint_mfa_totp",
+    "octoprint_mfa_totp.*",
+]
 
 [tool.ruff]
 exclude = [
-    # standard stuff
     ".bzr",
     ".direnv",
     ".eggs",
@@ -32,15 +72,20 @@ exclude = [
     "site-packages",
     "venv",
 ]
-
 line-length = 90
 indent-width = 4
-
-# Assume Python 3.7
 target-version = "py37"
 
 [tool.ruff.lint]
-select = ["B", "C", "E", "F", "I", "W", "B9"]
+select = [
+    "B",
+    "C",
+    "E",
+    "F",
+    "I",
+    "W",
+    "B9",
+]
 ignore = [
     "E203",
     "E231",
@@ -53,9 +98,11 @@ ignore = [
     "W605",
     "C901",
 ]
-fixable = ["I", "C4", "E"]
-
-# Allow unused variables when underscore-prefixed.
+fixable = [
+    "I",
+    "C4",
+    "E",
+]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.isort]
@@ -68,17 +115,5 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"
-
-# Enable auto-formatting of code examples in docstrings. Markdown,
-# reStructuredText code/literal blocks and doctests are all supported.
-#
-# This is currently disabled by default, but it is planned for this
-# to be opt-out in the future.
 docstring-code-format = false
-
-# Set the line length limit used when formatting code snippets in
-# docstrings.
-#
-# This only has an effect when the `docstring-code-format` setting is
-# enabled.
 docstring-code-line-length = "dynamic"
