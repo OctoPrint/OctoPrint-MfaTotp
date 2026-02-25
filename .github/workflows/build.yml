@@ -5,7 +5,7 @@ on:
       - main
       - dev
   release:
-    types: [released]
+    types: [published]
 
 env:
   DEFAULT_PYTHON: "3.12"
@@ -62,11 +62,40 @@ jobs:
           deps: ${{ github.workspace }}/dist/*.whl
           suffix: "-${{ matrix.octoprint }}"
 
+  publish-on-release:
+    name: 📦 Publish build & source on GitHub release
+    if: github.event_name == 'release'
+    needs:
+      - pre-commit
+      - e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇ Download build result
+        uses: actions/download-artifact@v6
+        with:
+          name: dist
+          path: dist
+
+      - name: ⬆ Upload to release
+        run: |
+          UPLOAD_URL="https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets"
+
+          for file in dist/*; do
+            [ -e "$file" ] || exit 1
+            echo "Uploading $file..."
+            response=$(curl -s -XPOST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: $(file -b --mime-type $file)" \
+              --data-binary @$file \
+              "$UPLOAD_URL?name=$(basename $file)")
+            echo "$response" | jq -e '.errors' >/dev/null && echo "Error uploading $file to release: $response" && exit 1 || true
+          done
+
   publish-on-testpypi:
     name: 📦 Publish on TestPyPI
     if: github.event_name == 'release'
     needs:
-      - e2e
+      - publish-on-release
     runs-on: ubuntu-latest
     environment:
       name: testpypi
