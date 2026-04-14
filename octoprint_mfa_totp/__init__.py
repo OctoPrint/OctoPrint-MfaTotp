@@ -198,6 +198,9 @@ class MfaTotpPlugin(
             self._save_data()
             return jsonify(True)
 
+    def is_api_protected(self):
+        return True
+
     ##~~ MfaPlugin mixin
 
     def is_mfa_enabled(self, user, *args, **kwargs):
