@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://test.pypi.org/p/OctoPrint-MfaTotp
+      url: https://pypi.org/p/OctoPrint-MfaTotp
     permissions:
       id-token: write
     steps:
