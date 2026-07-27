@@ -19,7 +19,7 @@ jobs:
         with:
           persist-credentials: false
       - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
       - name: 🔨 Build distribution
@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
       - name: 🏗 Set up pre-commit
